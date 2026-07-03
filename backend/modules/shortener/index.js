@@ -3,6 +3,8 @@ import { getShorteners } from "./handler.js";
 import { ErrorResponse } from "../../shared/Errors/ErrorResponse.js";
 import { ShortenerDto } from "./dto.js";
 import createError from 'http-errors';
+import { DeleteRedis, GetRedis, SetRedis } from "../../shared/lib/redis-connection.js";
+import { AnaliticUrl } from "../../shared/utils/analiticUrl.js";
 
 const normalizeTargetUrl = (value) => {
   if (!value) return value;
@@ -47,13 +49,26 @@ ShortenerRouter.post("/shorted", async (req, res, next) => {
 ShortenerRouter.get("/:url", async (req, res, next) => {
   try {
     const { url } = req.params;
-    const result = await ShortenerDto.getOriginUrl(url);
-    if (result.rowCount < 1) {
-      next(createError(404))
-    }
+    const getUrlFromRedis = await GetRedis(String(url));
+    console.log("redis url  ", getUrlFromRedis)
 
-    const targetUrl = normalizeTargetUrl(result.rows[0].original_url);  
-    res.redirect(301, targetUrl)
+    let originalUrl;
+    if (!getUrlFromRedis || getUrlFromRedis == null) {
+      const checkUrl = await ShortenerDto.getOriginUrl(url)
+      if (checkUrl.rowCount < 1) {
+        next(createError(404));
+      }
+      originalUrl = checkUrl.rows[0].original_url
+      await SetRedis(url, String(originalUrl));
+    } else {
+      originalUrl = getUrlFromRedis;
+    }
+    req.originalUrl = originalUrl;
+
+    await AnaliticUrl(req)
+
+    const targetUrl = normalizeTargetUrl(originalUrl);
+    res.json(targetUrl)
   } catch (error) {
     next(error)
   }

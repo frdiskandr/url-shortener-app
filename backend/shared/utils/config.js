@@ -1,7 +1,7 @@
 export const config = {
   NODE_ENV: process.env.NODE_ENV || "development",
   PORT: process.env.PORT || 3030,
-  REDIS_HOST: process.env.REDIS_HOST || "http://172.17.0.3",
+  REDIS_HOST: process.env.REDIS_HOST || "172.17.0.3",
   REDIS_PORT: process.env.REDIS_PORT || 30379,
   REDIS_USER: process.env.REDIS_USER || "",
   REDIS_PASSWORD: process.env.REDIS_PASSWORD || "",

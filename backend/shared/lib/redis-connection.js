@@ -1,36 +1,62 @@
-import { config } from "../utils/config"
-import { logger } from "../utils/logger"
+import { config } from "../utils/config.js"
+import { logger } from "../utils/logger.js"
+import { createClient } from "redis"
 
-import redis from "redis"
-
-
-const client = Redis.createClient({
-  url: `redis://${config.REDIS_USER}:${config.REDIS_PASSWORD}@${config.REDIS_HOST}:${config.REDIS_PORT}`
+const client = createClient({
+  username: config.REDIS_USER || undefined,
+  password: config.REDIS_PASSWORD || undefined,
+  socket: {
+    host: config.REDIS_HOST,
+    port: Number(config.REDIS_PORT),
+  },
 })
 
-export const SetRedis = async (key, value) => {
-  client.on('error', (err) => {logger.err("redis client error: ", err)})
+client.on("error", (err) => {
+  logger.error("redis client error", { error: err })
+  process.exit(1)
+})
+
+let connectPromise = null
+
+const ensureConnected = async () => {
+  if (connectPromise) {
+    return connectPromise
+  }
+
+  connectPromise = (async () => {
+    try {
+      if (!client.isOpen) {
+        await client.connect()
+      }
+
+      return client
+    } catch (error) {
+      connectPromise = null
+      throw error
+    }
+  })()
+
+  return connectPromise
+}
+
+const withRedisClient = async (operation) => {
   try {
-    await client.connect();
-    await client.set(key, value, {expiration: '1m'})
-    return 
+    const redisClient = await ensureConnected()
+    return await operation(redisClient)
   } catch (error) {
-    logger.error("redis client error: ", error)
+    logger.error("redis client error", { error })
     throw error
-  }finally{
-    client.close();
   }
 }
+
+export const SetRedis = async (key, value, ttlSeconds = 60) => {
+  return withRedisClient((redisClient) => redisClient.set(key, value, { EX: ttlSeconds }))
+}
+
 export const GetRedis = async (key) => {
- client.on('error', (err) => {logger.err("redis client error: ", err)})
-  try {
-    await client.connect();
-    const value = await client.get(key)
-    return value
-  } catch (error) {
-    logger.error("redis client error: ", error)
-    throw error
-  }finally{
-    client.close();
-  }
+  return withRedisClient((redisClient) => redisClient.get(key))
+}
+
+export const DeleteRedis = async (key) => {
+  return withRedisClient((redisClient) => redisClient.del(key))
 }
