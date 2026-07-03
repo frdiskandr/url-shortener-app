@@ -5,7 +5,7 @@ export class ShortenerDto {
   static async getsByUsername(userID) {
     const Redis = await GetRedis(String(userID));
     if(!Redis){
-      const q = "SELECT * FROM shorter_url s join users u on s.user_ID = u.ID where u.ID = $1 order by s.created_at asc"
+      const q = "SELECT * FROM shorter_url s join users u on s.user_ID = u.ID where u.ID = $1 order by s.created_at desc"
       const listShorted = await query(q, [userID])
       await SetRedis(String(userID), JSON.stringify(listShorted));
       return listShorted

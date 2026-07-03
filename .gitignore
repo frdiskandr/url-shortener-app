@@ -22,3 +22,4 @@ node_modules
 Thumbs.db
 ./backend/.env
 */node_modules
+./CLAUDE.md
