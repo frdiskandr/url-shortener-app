@@ -604,3 +604,5 @@
 {"code":400,"level":"error","timestamp":"2026-07-03T06:38:44.331Z"}
 {"level":"error","message":"Not Found","timestamp":"2026-07-03T06:49:25.633Z"}
 {"level":"error","message":"Not Found","timestamp":"2026-07-03T06:49:25.782Z"}
+{"error":{"code":"ENOTFOUND","errno":-3008,"hostname":"redis-10008.c292.ap-southeast-1-1.ec2.redns.redis-cloud.com","syscall":"getaddrinfo"},"level":"error","message":"redis client error","timestamp":"2026-07-03T08:01:45.396Z"}
+{"error":{"code":"ENOTFOUND","errno":-3008,"hostname":"redis-10008.c292.ap-southeast-1-1.ec2.redns.redis-cloud.com","syscall":"getaddrinfo"},"level":"error","message":"redis client error","timestamp":"2026-07-03T08:03:59.510Z"}
