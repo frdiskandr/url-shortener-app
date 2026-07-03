@@ -1,6 +1,6 @@
 name: Global env
 variables:
   - name: backend-url
-    value: http://localhost:3030
+    value: http://localhost:3000
   - name: frondend-url
     value: http://localhost:3000

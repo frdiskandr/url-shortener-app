@@ -4,12 +4,33 @@ import { logger } from '../utils/logger.js';
 
 const { Pool } = pg
 
-const pool = new Pool({
-  host: config.POSTGRES_HOST,
-  user: config.POSTGRES_USER,
-  password: config.POSTGRES_PASSWORD,
-  database: config.POSTGRES_DATABASE,
-})
+const ensureSslMode = (connectionString) => {
+  if (!connectionString) return connectionString
+  if (/sslmode=/i.test(connectionString)) return connectionString
+  return connectionString.includes('?')
+    ? `${connectionString}&sslmode=require`
+    : `${connectionString}?sslmode=require`
+}
+
+const poolConfig = config.DATABASE_URL
+  ? {
+      connectionString: ensureSslMode(config.DATABASE_URL),
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    }
+  : {
+      host: config.POSTGRES_HOST,
+      user: config.POSTGRES_USER,
+      password: config.POSTGRES_PASSWORD,
+      database: config.POSTGRES_DATABASE,
+      port: config.POSTGRES_PORT,
+      ssl: {
+        rejectUnauthorized: false,
+      },
+  }
+
+const pool = new Pool(poolConfig)
 
 export const query = async (q, params) => {
   const start = Date.now();

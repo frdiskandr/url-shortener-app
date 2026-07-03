@@ -1,6 +1,7 @@
-export class ErrorResponse extends Error{
-  constructor(code, message){
+export class ErrorResponse extends Error {
+  constructor(statusCode, message) {
     super(message)
-    this.code = code
+    this.statusCode = statusCode
+    this.code = statusCode
   }
 }
