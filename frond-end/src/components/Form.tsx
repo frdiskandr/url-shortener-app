@@ -1,6 +1,8 @@
+import React from 'react'
 import { useForm } from '@tanstack/react-form'
 import { Input } from './ui/8bit/input'
 import { Button } from './ui/8bit/button'
+import { useToast } from './ui/8bit/toast'
 
 type FormUrlProps = {
   onSuccess?: () => void
@@ -8,6 +10,10 @@ type FormUrlProps = {
 
 export default function FormUrl({ onSuccess }: FormUrlProps) {
   const backendUrl = (import.meta as any).env?.VITE_BACKEND_URL || (import.meta as any).env?.BACKEND_URL || 'http://localhost:3030'
+
+  const { toast } = useToast()
+
+  const urlFieldRef = React.useRef<any>(null)
 
   const form = useForm({
     defaultValues: { url: '' },
@@ -30,7 +36,10 @@ export default function FormUrl({ onSuccess }: FormUrlProps) {
 
         const result = await response.json()
         console.log('Shortened response:', result)
-        value.url = ''
+        // show success toast
+        toast('URL shortened successfully')
+        // clear input via the field API
+        urlFieldRef.current?.handleChange('')
         onSuccess?.()
       } catch (error) {
         console.error('Failed to submit URL:', error)
@@ -50,25 +59,31 @@ export default function FormUrl({ onSuccess }: FormUrlProps) {
         name="url"
         validators={{
           onChange: ({ value }) =>
-            /^https?:\/\//i.test(value) ? undefined : 'Must be Https://',
+            /^https?:\/\//i.test(value)
+              ? undefined
+              : 'URL must start with https://',
         }}
-        children={(field) => (
-          <>
-            {!field.state.meta.isValid && (
-              <em>{field.state.meta.errors.join(', ')}</em>
-            )}
-            <Input
-              value={field.state.value}
-              name={field.name}
-              type="text"
-              placeholder='https://'
-              onBlur={field.handleBlur}
-              onChange={(event) =>
-                field.handleChange(event.target.value)
-              }
-            />
-          </>
-        )}
+        children={(field) => {
+          // keep a ref to the field API so we can clear it after submit
+          urlFieldRef.current = field
+          return (
+            <>
+              {!field.state.meta.isValid && (
+                <em>Please enter a valid URL starting with http:// or https://</em>
+              )}
+              <Input
+                value={field.state.value}
+                name={field.name}
+                type="text"
+                placeholder='https://'
+                onBlur={field.handleBlur}
+                onChange={(event) =>
+                  field.handleChange(event.target.value)
+                }
+              />
+            </>
+          )
+        }}
       />
       <form.Subscribe
         selector={(state) => [state.canSubmit, state.isSubmitting]}
