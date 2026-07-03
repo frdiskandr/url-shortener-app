@@ -16,7 +16,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 var app = express();
 
 
-app.use(cors())
+app.use(cors({
+  origin: [
+    'http://localhost:3001',
+    'https://url-shortener-app-nu.vercel.app'
+  ],
+  credentials: true,
+  
+}))
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

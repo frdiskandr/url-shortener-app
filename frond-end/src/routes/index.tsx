@@ -5,7 +5,7 @@ import ListUrlShorted from '#/components/ListUrlShorted'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ToastProvider } from '#/components/ui/8bit/toast'
 
-const backendUrl = (import.meta as any).env?.VITE_BACKEND_URL || (import.meta as any).env?.BACKEND_URL || 'https://shortener-rosy.vercel.app'
+export const backendUrl = (import.meta as any).env?.VITE_BACKEND_URL || (import.meta as any).env?.BACKEND_URL || 'https://shortener-rosy.vercel.app'
 
 export const Route = createFileRoute('/')({ component: App })
 
